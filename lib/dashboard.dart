@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:intl/intl.dart'; // Add this import
+import 'dart:async'; // Add this import for Timer
+import '../constants/app_colors.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -18,6 +21,10 @@ class _DashboardState extends State<Dashboard> {
   
   final MapController _mapController = MapController();
   final List<Marker> _markers = [];
+
+  // For real-time clock
+  String _currentTime = '';
+  late Timer _timer;
 
   // Mock data for demonstration
   final List<Map<String, dynamic>> _alerts = [
@@ -60,45 +67,72 @@ class _DashboardState extends State<Dashboard> {
   void initState() {
     super.initState();
     _initializeMarkers();
+    _startTimer();
   }
 
-void _initializeMarkers() {
-  _markers.clear();
-  for (var alert in _alerts) {
-    _markers.add(
-      Marker(
-        point: LatLng(alert['lat'], alert['lng']),
-        child: GestureDetector(
-          onTap: () => _showIncidentDetails(alert),
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: alert['type'] == 'overload' ? Colors.red : Colors.blue,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white,
-                width: 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  void _startTimer() {
+    // Update time immediately
+    _updateTime();
+    
+    // Update every second
+    _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+      _updateTime();
+    });
+  }
+
+  void _updateTime() {
+    setState(() {
+      _currentTime = DateFormat('HH:mm:ss').format(DateTime.now());
+    });
+  }
+
+  String _getCurrentDate() {
+  return DateFormat('MM/dd/yy').format(DateTime.now()); // MM/DD/YY format
+}
+
+  void _initializeMarkers() {
+    _markers.clear();
+    for (var alert in _alerts) {
+      _markers.add(
+        Marker(
+          point: LatLng(alert['lat'], alert['lng']),
+          child: GestureDetector(
+            onTap: () => _showIncidentDetails(alert),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: alert['type'] == 'overload' ? AppColors.error : AppColors.primaryLight,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.white,
+                  width: 2,
                 ),
-              ],
-            ),
-            child: Icon(
-              alert['type'] == 'overload' ? Icons.people : Icons.speed,
-              color: Colors.white,
-              size: 20,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.black.withOpacity(0.3),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                alert['type'] == 'overload' ? Icons.people : Icons.speed,
+                color: AppColors.white,
+                size: 20,
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    }
   }
-}
 
   void _showIncidentDetails(Map<String, dynamic> alert) {
     showDialog(
@@ -108,7 +142,7 @@ void _initializeMarkers() {
           children: [
             Icon(
               alert['type'] == 'overload' ? Icons.people : Icons.speed,
-              color: alert['type'] == 'overload' ? Colors.red : Colors.blue,
+              color: alert['type'] == 'overload' ? AppColors.error : AppColors.primaryLight,
             ),
             const SizedBox(width: 8),
             Text('Incident Details - ${alert['vehicle']}'),
@@ -133,17 +167,17 @@ void _initializeMarkers() {
             Container(
               height: 120,
               decoration: BoxDecoration(
-                color: Colors.grey[200],
+                color: AppColors.grey200,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Center(
-                child: Icon(Icons.photo, size: 40, color: Colors.grey),
+                child: Icon(Icons.photo, size: 40, color: AppColors.grey400),
               ),
             ),
             const SizedBox(height: 8),
             const Text(
               'Evidence Image',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+              style: TextStyle(fontSize: 12, color: AppColors.grey500),
             ),
           ],
         ),
@@ -160,9 +194,9 @@ void _initializeMarkers() {
                 _showReviewSuccess(alert);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: alert['type'] == 'overload' ? Colors.red : Colors.blue,
+                backgroundColor: alert['type'] == 'overload' ? AppColors.error : AppColors.primaryLight,
               ),
-              child: const Text('Review Incident', style: TextStyle(color: Colors.white)),
+              child: const Text('Review Incident', style: TextStyle(color: AppColors.white)),
             ),
           ] else
             TextButton(
@@ -178,7 +212,7 @@ void _initializeMarkers() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Incident ${alert['vehicle']} marked as reviewed'),
-        backgroundColor: Colors.green,
+        backgroundColor: AppColors.success,
       ),
     );
   }
@@ -204,48 +238,134 @@ void _initializeMarkers() {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                'BANT.AI',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
+      backgroundColor: AppColors.white,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70),
+        child: AppBar(
+          backgroundColor: AppColors.white,
+          elevation: 0,
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              border: Border(
+                bottom: BorderSide(
+                  color: AppColors.grey200,
+                  width: 1,
                 ),
               ),
             ),
-            const SizedBox(width: 10),
-            const Text(
-              'Traffic Monitoring Dashboard',
-              style: TextStyle(
-                color: Color(0xFF1E3A8A),
-                fontWeight: FontWeight.w600,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                child: Row(
+                  children: [
+                    // Logo with gradient
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        gradient: AppColors.errorGradient,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.error.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Text(
+                        'BANT.AI',
+                        style: TextStyle(
+                          color: AppColors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 22,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    // Title with modern styling
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Traffic Monitoring',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 18,
+                            height: 1.2,
+                          ),
+                        ),
+                        Text(
+                          'Real-time fleet analytics',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w400,
+                            fontSize: 13,
+                            height: 1.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    // Modern action buttons
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.grey50,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.grey200),
+                      ),
+                      child: Row(
+                        children: [
+                          Stack(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.notifications_outlined, size: 22),
+                                color: AppColors.grey700,
+                                onPressed: () {},
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.notificationDot,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 12),
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              gradient: AppColors.primaryGradient,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.person,
+                              color: AppColors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
+          ),
         ),
-        backgroundColor: Colors.white,
-        elevation: 2,
-        shadowColor: Colors.blue[50],
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications, color: Colors.blue[700]),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: Icon(Icons.account_circle, color: Colors.blue[700]),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Row(
         children: [
@@ -253,10 +373,10 @@ void _initializeMarkers() {
           Container(
             width: 250,
             decoration: BoxDecoration(
-              color: const Color(0xFF1E3A8A),
+              color: AppColors.primaryDark,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.blue[900]!.withOpacity(0.3),
+                  color: AppColors.primaryDark.withOpacity(0.3),
                   blurRadius: 8,
                   offset: const Offset(2, 0),
                 ),
@@ -273,9 +393,9 @@ void _initializeMarkers() {
                   margin: const EdgeInsets.all(16),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
+                    color: AppColors.error.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red.withOpacity(0.3)),
+                    border: Border.all(color: AppColors.error.withOpacity(0.3)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -283,7 +403,7 @@ void _initializeMarkers() {
                       Text(
                         'System Status',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
@@ -295,7 +415,7 @@ void _initializeMarkers() {
                             width: 8,
                             height: 8,
                             decoration: const BoxDecoration(
-                              color: Colors.green,
+                              color: AppColors.liveIndicator,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -303,7 +423,7 @@ void _initializeMarkers() {
                           Text(
                             'All Systems Operational',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
+                              color: AppColors.white.withOpacity(0.8),
                               fontSize: 12,
                             ),
                           ),
@@ -324,10 +444,10 @@ void _initializeMarkers() {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.white,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: AppColors.grey400.withOpacity(0.1),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -339,14 +459,14 @@ void _initializeMarkers() {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
-                          color: Colors.blue[50],
+                          color: AppColors.primary.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.blue[100]!),
+                          border: Border.all(color: AppColors.primary.withOpacity(0.3)),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: _selectedDateFilter,
-                            icon: Icon(Icons.arrow_drop_down, color: Colors.blue[700]),
+                            icon: Icon(Icons.arrow_drop_down, color: AppColors.primary),
                             onChanged: (String? newValue) {
                               setState(() {
                                 _selectedDateFilter = newValue!;
@@ -357,7 +477,7 @@ void _initializeMarkers() {
                                 value: value,
                                 child: Text(
                                   value,
-                                  style: TextStyle(color: Colors.blue[700]),
+                                  style: TextStyle(color: AppColors.primary),
                                 ),
                               );
                             }).toList(),
@@ -377,10 +497,10 @@ void _initializeMarkers() {
                                 _showOverloading = value;
                               });
                             },
-                            selectedColor: Colors.red[100],
-                            checkmarkColor: Colors.red,
+                            selectedColor: AppColors.error.withOpacity(0.2),
+                            checkmarkColor: AppColors.error,
                             labelStyle: TextStyle(
-                              color: _showOverloading ? Colors.red : Colors.grey,
+                              color: _showOverloading ? AppColors.error : AppColors.grey600,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -392,10 +512,10 @@ void _initializeMarkers() {
                                 _showOverspeeding = value;
                               });
                             },
-                            selectedColor: Colors.blue[100],
-                            checkmarkColor: Colors.blue,
+                            selectedColor: AppColors.primary.withOpacity(0.2),
+                            checkmarkColor: AppColors.primary,
                             labelStyle: TextStyle(
-                              color: _showOverspeeding ? Colors.blue : Colors.grey,
+                              color: _showOverspeeding ? AppColors.primary : AppColors.grey600,
                             ),
                           ),
                         ],
@@ -404,7 +524,7 @@ void _initializeMarkers() {
                       Text(
                         'Live Fleet Monitoring',
                         style: TextStyle(
-                          color: Colors.blue[800],
+                          color: AppColors.primaryDark,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -427,7 +547,7 @@ void _initializeMarkers() {
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.blue[100]!,
+                                color: AppColors.primary.withOpacity(0.2),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -461,11 +581,11 @@ void _initializeMarkers() {
                                   right: 16,
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      color: Colors.white,
+                                      color: AppColors.white,
                                       borderRadius: BorderRadius.circular(8),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.1),
+                                          color: AppColors.black.withOpacity(0.1),
                                           blurRadius: 4,
                                         ),
                                       ],
@@ -473,7 +593,7 @@ void _initializeMarkers() {
                                     child: Column(
                                       children: [
                                         IconButton(
-                                          icon: Icon(Icons.add, color: Colors.blue[700]),
+                                          icon: Icon(Icons.add, color: AppColors.primary),
                                           onPressed: () {
                                             _mapController.move(
                                               _mapController.camera.center,
@@ -482,7 +602,7 @@ void _initializeMarkers() {
                                           },
                                         ),
                                         IconButton(
-                                          icon: Icon(Icons.remove, color: Colors.blue[700]),
+                                          icon: Icon(Icons.remove, color: AppColors.primary),
                                           onPressed: () {
                                             _mapController.move(
                                               _mapController.camera.center,
@@ -491,7 +611,7 @@ void _initializeMarkers() {
                                           },
                                         ),
                                         IconButton(
-                                          icon: Icon(Icons.my_location, color: Colors.blue[700]),
+                                          icon: Icon(Icons.my_location, color: AppColors.primary),
                                           onPressed: () {
                                             _mapController.move(
                                               const LatLng(14.5995, 120.9842),
@@ -511,11 +631,11 @@ void _initializeMarkers() {
                                   child: Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: Colors.white,
+                                      color: AppColors.white,
                                       borderRadius: BorderRadius.circular(8),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.1),
+                                          color: AppColors.black.withOpacity(0.1),
                                           blurRadius: 4,
                                         ),
                                       ],
@@ -526,14 +646,14 @@ void _initializeMarkers() {
                                         Text(
                                           'Map Legend',
                                           style: TextStyle(
-                                            color: Colors.blue[800],
+                                            color: AppColors.primaryDark,
                                             fontWeight: FontWeight.bold,
                                             fontSize: 14,
                                           ),
                                         ),
                                         const SizedBox(height: 8),
-                                        _buildLegendItem(Colors.red, 'Overloading'),
-                                        _buildLegendItem(Colors.blue, 'Overspeeding'),
+                                        _buildLegendItem(AppColors.mapMarkerOverload, 'Overloading'),
+                                        _buildLegendItem(AppColors.mapMarkerOverspeed, 'Overspeeding'),
                                       ],
                                     ),
                                   ),
@@ -558,7 +678,7 @@ void _initializeMarkers() {
                                     'Active Vehicles',
                                     '142',
                                     Icons.directions_bus,
-                                    Colors.blue,
+                                    AppColors.primary,
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -567,7 +687,7 @@ void _initializeMarkers() {
                                     'Alerts Today',
                                     '23',
                                     Icons.warning,
-                                    Colors.red,
+                                    AppColors.error,
                                   ),
                                 ),
                               ],
@@ -577,19 +697,19 @@ void _initializeMarkers() {
                               children: [
                                 Expanded(
                                   child: _buildStatCard(
-                                    'Avg Speed',
-                                    '45 kph',
-                                    Icons.speed,
-                                    Colors.green,
+                                    'Date',
+                                    _getCurrentDate(),
+                                    Icons.calendar_today,
+                                    AppColors.success,
                                   ),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: _buildStatCard(
-                                    'Response Time',
-                                    '2.3 min',
-                                    Icons.timer,
-                                    Colors.orange,
+                                    'Time',
+                                    _currentTime,
+                                    Icons.access_time,
+                                    AppColors.warning,
                                   ),
                                 ),
                               ],
@@ -601,16 +721,16 @@ void _initializeMarkers() {
                             Expanded(
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: AppColors.white,
                                   borderRadius: BorderRadius.circular(12),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.grey.withOpacity(0.1),
+                                      color: AppColors.grey400.withOpacity(0.1),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
                                     ),
                                   ],
-                                  border: Border.all(color: Colors.grey[200]!),
+                                  border: Border.all(color: AppColors.grey200),
                                 ),
                                 child: Column(
                                   children: [
@@ -618,12 +738,12 @@ void _initializeMarkers() {
                                       padding: const EdgeInsets.all(16),
                                       child: Row(
                                         children: [
-                                          Icon(Icons.notifications_active, color: Colors.red[700]),
+                                          Icon(Icons.notifications_active, color: AppColors.error),
                                           const SizedBox(width: 8),
                                           Text(
                                             'Recent Alerts',
                                             style: TextStyle(
-                                              color: Colors.blue[800],
+                                              color: AppColors.primaryDark,
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
                                             ),
@@ -632,13 +752,13 @@ void _initializeMarkers() {
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                             decoration: BoxDecoration(
-                                              color: Colors.red[50],
+                                              color: AppColors.error.withOpacity(0.1),
                                               borderRadius: BorderRadius.circular(12),
                                             ),
                                             child: Text(
                                               '${_alerts.where((alert) => alert['status'] == 'pending').length} New',
                                               style: TextStyle(
-                                                color: Colors.red[700],
+                                                color: AppColors.error,
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.bold,
                                               ),
@@ -679,14 +799,14 @@ void _initializeMarkers() {
       width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: _currentIndex == index ? Colors.white.withOpacity(0.2) : Colors.transparent,
+        color: _currentIndex == index ? AppColors.white.withOpacity(0.2) : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
       ),
       child: ListTile(
-        leading: Icon(icon, color: Colors.white),
+        leading: Icon(icon, color: AppColors.white),
         title: Text(
           title,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: AppColors.white),
         ),
         onTap: () {
           setState(() {
@@ -697,58 +817,67 @@ void _initializeMarkers() {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: Border.all(color: Colors.grey[100]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: color, size: 20),
+Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: AppColors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.grey400.withOpacity(0.1),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
+        ),
+      ],
+      border: Border.all(color: AppColors.grey100),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
               ),
-              const Spacer(),
-              Text(
-                value,
-                style: TextStyle(
-                  color: Colors.blue[800],
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
+              child: Icon(icon, color: color, size: 20),
             ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    value,
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      color: AppColors.primaryDark,
+                      fontSize: title == 'Date' ? 16 : 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          title,
+          style: TextStyle(
+            color: AppColors.grey600,
+            fontSize: 14,
           ),
-        ],
-      ),
-    );
-  }
-
+        ),
+      ],
+    ),
+  );
+}
   Widget _buildAlertItem(Map<String, dynamic> alert) {
     final isOverload = alert['type'] == 'overload';
     final isPending = alert['status'] == 'pending';
@@ -759,10 +888,10 @@ void _initializeMarkers() {
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isPending ? (isOverload ? Colors.red[50] : Colors.blue[50]) : Colors.grey[50],
+          color: isPending ? (isOverload ? AppColors.error.withOpacity(0.1) : AppColors.primary.withOpacity(0.1)) : AppColors.grey50,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isPending ? (isOverload ? Colors.red[100]! : Colors.blue[100]!) : Colors.grey[200]!,
+            color: isPending ? (isOverload ? AppColors.error.withOpacity(0.3) : AppColors.primary.withOpacity(0.3)) : AppColors.grey200,
           ),
         ),
         child: Row(
@@ -771,7 +900,7 @@ void _initializeMarkers() {
               width: 8,
               height: 40,
               decoration: BoxDecoration(
-                color: isOverload ? Colors.red : Colors.blue,
+                color: isOverload ? AppColors.error : AppColors.primary,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -783,7 +912,7 @@ void _initializeMarkers() {
                   Text(
                     '${alert['vehicle']} • ${alert['location']}',
                     style: TextStyle(
-                      color: Colors.blue[800],
+                      color: AppColors.primaryDark,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -793,14 +922,14 @@ void _initializeMarkers() {
                       ? 'Overload: ${alert['passengers']}/${alert['capacity']} passengers'
                       : 'Overspeed: ${alert['speed']} kph (Limit: ${alert['limit']} kph)',
                     style: TextStyle(
-                      color: Colors.grey[600],
+                      color: AppColors.grey600,
                       fontSize: 12,
                     ),
                   ),
                   Text(
                     'Time: ${alert['time']}',
                     style: TextStyle(
-                      color: Colors.grey[500],
+                      color: AppColors.grey500,
                       fontSize: 11,
                     ),
                   ),
@@ -811,13 +940,13 @@ void _initializeMarkers() {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: isOverload ? Colors.red : Colors.blue,
+                  color: isOverload ? AppColors.error : AppColors.primary,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Text(
                   'Review',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
