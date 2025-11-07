@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import '../constants/app_colors.dart'; // Add this import
+import 'package:intl/intl.dart'; // Add this import
+import 'dart:async'; // Add this import for Timer
+import '../constants/app_colors.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -19,6 +21,10 @@ class _DashboardState extends State<Dashboard> {
   
   final MapController _mapController = MapController();
   final List<Marker> _markers = [];
+
+  // For real-time clock
+  String _currentTime = '';
+  late Timer _timer;
 
   // Mock data for demonstration
   final List<Map<String, dynamic>> _alerts = [
@@ -61,45 +67,72 @@ class _DashboardState extends State<Dashboard> {
   void initState() {
     super.initState();
     _initializeMarkers();
+    _startTimer();
   }
 
-void _initializeMarkers() {
-  _markers.clear();
-  for (var alert in _alerts) {
-    _markers.add(
-      Marker(
-        point: LatLng(alert['lat'], alert['lng']),
-        child: GestureDetector(
-          onTap: () => _showIncidentDetails(alert),
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: alert['type'] == 'overload' ? AppColors.error : AppColors.primaryLight,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.white,
-                width: 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.black.withOpacity(0.3),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  void _startTimer() {
+    // Update time immediately
+    _updateTime();
+    
+    // Update every second
+    _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+      _updateTime();
+    });
+  }
+
+  void _updateTime() {
+    setState(() {
+      _currentTime = DateFormat('HH:mm:ss').format(DateTime.now());
+    });
+  }
+
+  String _getCurrentDate() {
+  return DateFormat('MM/dd/yy').format(DateTime.now()); // MM/DD/YY format
+}
+
+  void _initializeMarkers() {
+    _markers.clear();
+    for (var alert in _alerts) {
+      _markers.add(
+        Marker(
+          point: LatLng(alert['lat'], alert['lng']),
+          child: GestureDetector(
+            onTap: () => _showIncidentDetails(alert),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: alert['type'] == 'overload' ? AppColors.error : AppColors.primaryLight,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.white,
+                  width: 2,
                 ),
-              ],
-            ),
-            child: Icon(
-              alert['type'] == 'overload' ? Icons.people : Icons.speed,
-              color: AppColors.white,
-              size: 20,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.black.withOpacity(0.3),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                alert['type'] == 'overload' ? Icons.people : Icons.speed,
+                color: AppColors.white,
+                size: 20,
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    }
   }
-}
 
   void _showIncidentDetails(Map<String, dynamic> alert) {
     showDialog(
@@ -206,7 +239,7 @@ void _initializeMarkers() {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
-appBar: PreferredSize(
+      appBar: PreferredSize(
         preferredSize: const Size.fromHeight(70),
         child: AppBar(
           backgroundColor: AppColors.white,
@@ -664,18 +697,18 @@ appBar: PreferredSize(
                               children: [
                                 Expanded(
                                   child: _buildStatCard(
-                                    'Avg Speed',
-                                    '45 kph',
-                                    Icons.speed,
+                                    'Date',
+                                    _getCurrentDate(),
+                                    Icons.calendar_today,
                                     AppColors.success,
                                   ),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: _buildStatCard(
-                                    'Response Time',
-                                    '2.3 min',
-                                    Icons.timer,
+                                    'Time',
+                                    _currentTime,
+                                    Icons.access_time,
                                     AppColors.warning,
                                   ),
                                 ),
@@ -784,58 +817,67 @@ appBar: PreferredSize(
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.grey400.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: Border.all(color: AppColors.grey100),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: color, size: 20),
+Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: AppColors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.grey400.withOpacity(0.1),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
+        ),
+      ],
+      border: Border.all(color: AppColors.grey100),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
               ),
-              const Spacer(),
-              Text(
-                value,
-                style: TextStyle(
-                  color: AppColors.primaryDark,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: TextStyle(
-              color: AppColors.grey600,
-              fontSize: 14,
+              child: Icon(icon, color: color, size: 20),
             ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    value,
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      color: AppColors.primaryDark,
+                      fontSize: title == 'Date' ? 16 : 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          title,
+          style: TextStyle(
+            color: AppColors.grey600,
+            fontSize: 14,
           ),
-        ],
-      ),
-    );
-  }
-
+        ),
+      ],
+    ),
+  );
+}
   Widget _buildAlertItem(Map<String, dynamic> alert) {
     final isOverload = alert['type'] == 'overload';
     final isPending = alert['status'] == 'pending';
