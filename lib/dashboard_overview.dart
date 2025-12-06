@@ -633,6 +633,8 @@ class _DashboardOverviewState extends State<DashboardOverview> {
   }
 
   void _showVerificationDialog(BuildContext context, Violation v) {
+    final isOverload = v.type == ViolationType.overload;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -651,41 +653,43 @@ class _DashboardOverviewState extends State<DashboardOverview> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Evidence Photo
-                Container(
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: AppColors.grey100,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.grey300),
-                  ),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.photo_camera, size: 48, color: AppColors.grey400),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Evidence Photo',
-                          style: TextStyle(
-                            color: AppColors.grey600,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
+                // Evidence Photo - Only for overloading
+                if (isOverload) ...[
+                  Container(
+                    height: 200,
+                    decoration: BoxDecoration(
+                      color: AppColors.grey100,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.grey300),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.photo_camera, size: 48, color: AppColors.grey400),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Evidence Photo',
+                            style: TextStyle(
+                              color: AppColors.grey600,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Captured: ${DateFormat('MM/dd/yy HH:mm').format(v.timestamp)}',
-                          style: TextStyle(
-                            color: AppColors.grey500,
-                            fontSize: 11,
+                          const SizedBox(height: 4),
+                          Text(
+                            'Captured: ${DateFormat('MM/dd/yy HH:mm').format(v.timestamp)}',
+                            style: TextStyle(
+                              color: AppColors.grey500,
+                              fontSize: 11,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
+                ],
                 Text(
                   'Violation Details',
                   style: TextStyle(

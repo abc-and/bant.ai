@@ -656,8 +656,10 @@ Widget _buildCompactTypeBadge(Violation v) {
                     const SizedBox(height: 16),
                     _buildRepeatOffenderWarning(v),
                   ],
-                  const SizedBox(height: 16),
-                  _buildEvidenceSection(),
+                  if (v.type == ViolationType.overload) ...[
+                    const SizedBox(height: 16),
+                    _buildEvidenceSection(),
+                  ],
                   const SizedBox(height: 20),
                   _buildActionButtons(v),
                 ],
