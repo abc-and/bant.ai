@@ -59,7 +59,7 @@ class _HistoryComplianceState extends State<HistoryCompliance> {
     }
 
     // Type filter
-    if (_typeFilter == 'overload') {
+    if (_typeFilter == 'overcapacity') {
       list = list.where((v) => v.type == ViolationType.overload).toList();
     } else if (_typeFilter == 'overspeed') {
       list = list.where((v) => v.type == ViolationType.overspeed).toList();
@@ -208,7 +208,7 @@ class _HistoryComplianceState extends State<HistoryCompliance> {
             _typeFilter,
             [
               {'value': 'all', 'label': 'All Types'},
-              {'value': 'overload', 'label': 'Overloading'},
+              {'value': 'overcapacity', 'label': 'Overcapacity'},
               {'value': 'overspeed', 'label': 'Overspeeding'},
             ],
             (value) => setState(() => _typeFilter = value),
@@ -311,7 +311,7 @@ class _HistoryComplianceState extends State<HistoryCompliance> {
             child: _buildStatItem(
               Icons.people,
               '$overload',
-              'Overloading Cases',
+              'Overcapacity Cases',
               AppColors.error,
             ),
           ),
@@ -478,7 +478,7 @@ class _HistoryComplianceState extends State<HistoryCompliance> {
                         ),
                         child: Text(
                           v.type == ViolationType.overload
-                              ? 'OVERLOAD'
+                              ? 'OVERCAPACITY'
                               : 'OVERSPEED',
                           style: TextStyle(
                             color: v.type == ViolationType.overload
@@ -635,7 +635,7 @@ class _HistoryComplianceState extends State<HistoryCompliance> {
                 const SizedBox(height: 16),
                 _buildDetailSection('Violation Details', [
                   if (v.type == ViolationType.overload) ...[
-                    _buildDetailRow('Type', 'Overloading'),
+                    _buildDetailRow('Type', 'Overcapacity'),
                     _buildDetailRow(
                       'Passengers',
                       '${v.details['passengers']}/${v.details['capacity']}',
@@ -968,7 +968,7 @@ class _HistoryComplianceState extends State<HistoryCompliance> {
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
                       _buildPdfStat('Total Records', '${_filteredViolations.length}'),
-                      _buildPdfStat('Overloading', '${_filteredViolations.where((v) => v.type == ViolationType.overload).length}'),
+                      _buildPdfStat('Overcapacity', '${_filteredViolations.where((v) => v.type == ViolationType.overload).length}'),
                       _buildPdfStat('Overspeeding', '${_filteredViolations.where((v) => v.type == ViolationType.overspeed).length}'),
                       _buildPdfStat('Period', _timeFilter == 'all' ? 'All Time' : 
                         _timeFilter == 'today' ? 'Today' : 
@@ -1053,7 +1053,7 @@ class _HistoryComplianceState extends State<HistoryCompliance> {
                                 borderRadius: const pw.BorderRadius.all(pw.Radius.circular(2)),
                               ),
                               child: pw.Center(
-                                child: pw.Text('${v.route}', style: _cellStyle),
+                                child: pw.Text(v.route, style: _cellStyle),
                               ),
                             ),
                           ),
@@ -1073,7 +1073,7 @@ class _HistoryComplianceState extends State<HistoryCompliance> {
                               ),
                               child: pw.Center(
                                 child: pw.Text(
-                                  v.type == ViolationType.overload ? 'OVERLOAD' : 'OVERSPEED',
+                                  v.type == ViolationType.overload ? 'OVERCAPACITY' : 'OVERSPEED',
                                   style: pw.TextStyle(
                                     fontSize: 8,
                                     fontWeight: pw.FontWeight.bold,

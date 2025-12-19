@@ -30,7 +30,9 @@ class _ViolationsManagementState extends State<ViolationsManagement> {
     return widget.violations.where((v) {
       if (v.status == ViolationStatus.detected || 
           v.status == ViolationStatus.resolved || 
-          v.status == ViolationStatus.dismissed) return false;
+          v.status == ViolationStatus.dismissed) {
+        return false;
+      }
       
       if (_searchQuery.isNotEmpty) {
         final query = _searchQuery.toLowerCase();
@@ -133,7 +135,7 @@ class _ViolationsManagementState extends State<ViolationsManagement> {
       children: [
         Expanded(child: _buildCompactStatChip('Total Verified', verified, AppColors.primary, Icons.verified_user)),
         const SizedBox(width: 8), // Reduced spacing
-        Expanded(child: _buildCompactStatChip('Overloading', overload, AppColors.error, Icons.people)),
+        Expanded(child: _buildCompactStatChip('Overcapacity', overload, AppColors.error, Icons.people)),
         const SizedBox(width: 8), // Reduced spacing
         Expanded(child: _buildCompactStatChip('Overspeeding', overspeed, AppColors.orange, Icons.speed)),
       ],
@@ -439,7 +441,11 @@ Widget _buildCompactStatChip(String label, int count, Color color, IconData icon
               value: isSelected,
               onChanged: (val) {
                 setState(() {
-                  if (val!) _selectedIds.add(v.id); else _selectedIds.remove(v.id);
+                  if (val!) {
+                    _selectedIds.add(v.id);
+                  } else {
+                    _selectedIds.remove(v.id);
+                  }
                 });
               },
             ),
@@ -630,7 +636,7 @@ Widget _buildCompactTypeBadge(Violation v) {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(isOverload ? 'Overloading Violation' : 'Overspeeding Violation',
+                      Text(isOverload ? 'Overcapacity Violation' : 'Overspeeding Violation',
                         style: const TextStyle(color: AppColors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                       Text('Violation Details', 
                         style: TextStyle(color: AppColors.white.withOpacity(0.9), fontSize: 12)),
@@ -733,7 +739,7 @@ Widget _buildCompactTypeBadge(Violation v) {
                 child: Icon(isOverload ? Icons.people : Icons.speed, color: color, size: 20),
               ),
               const SizedBox(width: 12),
-              Text(isOverload ? 'OVERLOADING DETAILS' : 'OVERSPEEDING DETAILS',
+              Text(isOverload ? 'OVERCAPACITY DETAILS' : 'OVERSPEEDING DETAILS',
                 style: TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
             ],
           ),
@@ -1017,7 +1023,7 @@ Widget _buildCompactTypeBadge(Violation v) {
                       style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
                     ),
                     pw.Text(
-                      isOverload ? 'PASSENGER OVERLOADING' : 'SPEED LIMIT VIOLATION',
+                      isOverload ? 'PASSENGER LIMIT VIOLATION' : 'SPEED LIMIT VIOLATION',
                       style: pw.TextStyle(
                         fontSize: 11,
                         fontWeight: pw.FontWeight.bold,

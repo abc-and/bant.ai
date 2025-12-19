@@ -83,7 +83,7 @@ class _DashboardOverviewState extends State<DashboardOverview> {
               
               // Overloading Toggle
               _buildToggleChip(
-                'Overloading',
+                'Overcapacity',
                 _showOverloading,
                 AppColors.error,
                 (val) => setState(() => _showOverloading = val),
@@ -221,7 +221,7 @@ class _DashboardOverviewState extends State<DashboardOverview> {
                                   ),
                                 ),
                                 const SizedBox(height: 12),
-                                _buildLegendItem(AppColors.error, 'Overloading'),
+                                _buildLegendItem(AppColors.error, 'Overcapacity'),
                                 const SizedBox(height: 8),
                                 _buildLegendItem(AppColors.primary, 'Overspeeding'),
                               ],
@@ -574,7 +574,7 @@ class _DashboardOverviewState extends State<DashboardOverview> {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    isOverload ? 'Overload' : 'Overspeed',
+                    isOverload ? 'Overcapacity' : 'Overspeed',
                     style: TextStyle(
                       color: isOverload ? AppColors.error : AppColors.primary,
                       fontSize: 10,
@@ -706,7 +706,7 @@ class _DashboardOverviewState extends State<DashboardOverview> {
                 _buildVerificationRow('Location', v.location),
                 _buildVerificationRow(
                   'Type',
-                  v.type == ViolationType.overload ? 'Overloading' : 'Overspeeding',
+                  v.type == ViolationType.overload ? 'Overcapacity' : 'Overspeeding',
                 ),
                 if (v.type == ViolationType.overload)
                   _buildVerificationRow(

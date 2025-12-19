@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import 'constants/app_colors.dart';
 import 'models.dart';
 import 'dashboard_overview.dart';
@@ -145,59 +144,81 @@ class _GovernmentFleetDashboardState extends State<GovernmentFleetDashboard> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return PreferredSize(
-      preferredSize: const Size.fromHeight(72),
-      child: AppBar(
-        backgroundColor: AppColors.white,
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            border: Border(bottom: BorderSide(color: AppColors.grey200, width: 1)),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.black.withOpacity(0.03),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+PreferredSizeWidget _buildAppBar() {
+  return PreferredSize(
+    preferredSize: const Size.fromHeight(72),
+    child: Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        border: Border(bottom: BorderSide(color: AppColors.grey200, width: 1)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Logo - Positioned with absolute positioning for precise control
+          Positioned(
+            left: -20, // Position it 20px left of the container
+            top: -25, // Position it 25px above the header
+            bottom: -25, // Extend it 25px below the header
+            child: SizedBox(
+              height: 120, // Fixed height of 120px
+              width: 300, // Fixed width of 300px
+              child: Image.asset(
+                'assets/bantai.png', // Your logo path
+                fit: BoxFit.contain, // Maintain aspect ratio
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      gradient: AppColors.errorGradient,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.error.withOpacity(0.25),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.primary,
+                          AppColors.primaryLight,
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Text(
                       'BANT.AI',
                       style: TextStyle(
                         color: AppColors.white,
                         fontWeight: FontWeight.w900,
-                        fontSize: 24,
-                        letterSpacing: 1,
+                        fontSize: 48, // Fallback text size
+                        letterSpacing: 2.5,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 24),
+                  );
+                },
+              ),
+            ),
+          ),
+          
+          // Main content with padding to avoid overlapping with logo
+          Padding(
+            padding: const EdgeInsets.only(
+              left: 260, // Push content to right to avoid overlapping with logo
+              right: 20,
+              top: 8,
+              bottom: 8,
+            ),
+            child: SafeArea(
+              child: Row(
+                children: [
+                  // Removed the SizedBox that was creating space for the old logo
+                  
+                  // Title section
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
-                        'Mandaue City Fleet Monitoring',
+                        'TRAFFIC MONITORING',
                         style: TextStyle(
                           color: AppColors.textPrimary,
                           fontWeight: FontWeight.w800,
@@ -207,7 +228,7 @@ class _GovernmentFleetDashboardState extends State<GovernmentFleetDashboard> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Government Regulatory System',
+                        'Real Time Modern Jeepney Operation Analytics and Regulation',
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontWeight: FontWeight.w500,
@@ -218,6 +239,8 @@ class _GovernmentFleetDashboardState extends State<GovernmentFleetDashboard> {
                     ],
                   ),
                   const Spacer(),
+                  
+                  // Notification and profile
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
@@ -275,10 +298,11 @@ class _GovernmentFleetDashboardState extends State<GovernmentFleetDashboard> {
               ),
             ),
           ),
-        ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSidebar() {
     return Container(
