@@ -6,6 +6,8 @@ import 'dashboard_overview.dart';
 import 'violations_management.dart';
 import 'history_compliance.dart';
 import 'user_management.dart';
+import 'modern_jeepney_registration.dart';
+
 
 // Main Dashboard
 class GovernmentFleetDashboard extends StatefulWidget {
@@ -170,7 +172,7 @@ PreferredSizeWidget _buildAppBar() {
               height: 120, // Fixed height of 120px
               width: 300, // Fixed width of 300px
               child: Image.asset(
-                'assets/bantai.png', // Your logo path
+                'assets/bantai_logo.png', // Your logo path
                 fit: BoxFit.contain, // Maintain aspect ratio
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
@@ -214,30 +216,30 @@ PreferredSizeWidget _buildAppBar() {
                   
                   // Title section
                   Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'TRAFFIC MONITORING',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 19,
-                          height: 1.2,
-                        ),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'MODERN JEEPNEY FLEET MONITORING SYSTEM', // Updated title
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 19,
+                        height: 1.2,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Real Time Modern Jeepney Operation Analytics and Regulation',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 13,
-                          height: 1.2,
-                        ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Real-Time MPUJ Operations Analytics, Regulation & Registration',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 13,
+                        height: 1.2,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
+                ),
                   const Spacer(),
                   
                   // Notification and profile
@@ -304,34 +306,35 @@ PreferredSizeWidget _buildAppBar() {
   );
 }
 
-  Widget _buildSidebar() {
-    return Container(
-      width: 240,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primaryDark,
-            AppColors.primaryDark.withOpacity(0.95),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black.withOpacity(0.15),
-            blurRadius: 20,
-            offset: const Offset(4, 0),
-          ),
+Widget _buildSidebar() {
+  return Container(
+    width: 240,
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [
+          AppColors.primaryDark,
+          AppColors.primaryDark.withOpacity(0.95),
         ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
       ),
-      child: Column(
-        children: [
-          const SizedBox(height: 28),
-          _buildSidebarItem(Icons.dashboard_rounded, 'Dashboard', 0),
-          _buildSidebarItem(Icons.warning_amber_rounded, 'Violations Management', 1),
-          _buildSidebarItem(Icons.history_rounded, 'History', 2),
-          _buildSidebarItem(Icons.settings_rounded, 'User Management', 3),
-          const Spacer(),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.black.withOpacity(0.15),
+          blurRadius: 20,
+          offset: const Offset(4, 0),
+        ),
+      ],
+    ),
+    child: Column(
+      children: [
+        const SizedBox(height: 28),
+        _buildSidebarItem(Icons.dashboard_rounded, 'Dashboard', 0),
+        _buildSidebarItem(Icons.warning_amber_rounded, 'Violations Management', 1),
+        _buildSidebarItem(Icons.app_registration_rounded, 'Modern Jeepney Registration', 2), // NEW TAB
+        _buildSidebarItem(Icons.history_rounded, 'History', 3),
+        _buildSidebarItem(Icons.settings_rounded, 'User Management', 4),
+        const Spacer(),
           Container(
             margin: const EdgeInsets.all(20),
             padding: const EdgeInsets.all(16),
@@ -477,7 +480,7 @@ PreferredSizeWidget _buildAppBar() {
     );
   }
 
- Widget _buildCurrentPage() {
+Widget _buildCurrentPage() {
   switch (_currentIndex) {
     case 0:
       return DashboardOverview(
@@ -487,7 +490,9 @@ PreferredSizeWidget _buildAppBar() {
       );
     case 1:
       return ViolationsManagement(violations: _violations, onUpdate: () => setState(() {}));
-    case 2:
+    case 2:  // NEW CASE FOR REGISTRATION
+      return const ModernJeepneyRegistration();
+    case 3:
       return HistoryCompliance(
         violations: _resolvedViolations,
         onSetRetentionMonths: (months) {
@@ -496,8 +501,8 @@ PreferredSizeWidget _buildAppBar() {
           });
         },
       );
-    case 3:
-      return const UserManagement(); // Changed from SystemSettings()
+    case 4:
+      return const UserManagement();
     default:
       return DashboardOverview(
         violations: _violations,

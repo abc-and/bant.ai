@@ -37,3 +37,35 @@ class Violation {
     this.resolvedDate,
   });
 }
+
+// Add this class to your existing models.dart file
+class ModernJeepney {
+  final String vehicleId;
+  final String driverName;
+  final String plateNumber;
+  final String vehicleType;
+  final String vehicleModel;
+  final String operator;
+  final String route;
+  final int sittingCapacity;
+   final int standingCapacity;
+
+  final DateTime registrationDate;
+  final String status;
+  int violationCount;
+
+  ModernJeepney({
+    required this.vehicleId,
+    required this.driverName,
+    required this.plateNumber,
+    required this.vehicleType,
+    required this.vehicleModel,
+    required this.operator,
+    required this.route,
+    required this.sittingCapacity,
+    required this.standingCapacity,
+    required this.registrationDate,
+    required this.status,
+    this.violationCount = 0,
+  });
+}
